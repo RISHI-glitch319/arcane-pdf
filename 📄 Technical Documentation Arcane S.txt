@@ -1,0 +1,20 @@
+📄 Technical Documentation: Arcane Sovereign Engine1. Core MissionThe Arcane Sovereign Engine (formerly Arcane PDF Cinematic Engine) is a professional-grade document manipulation platform. It focuses on high-fidelity "distillation" of PDF assets, providing users with a trilateral interface for real-time security, organization, and editing.
+2. Full Technology StackYour project integrates a sophisticated mix of frontend interactivity and backend document processing.Frontend (Interactivity Layer)Framework: Next.js 16.1.6 (App Router).
+Language: TypeScript.
+Styling: Tailwind CSS.
+Animations: Framer Motion.
+Icons: Lucide React.
+Linter: ESLint v9 (downgraded for plugin compatibility).
+Backend (Processing Engine)Framework:FastAPI.
+Primary Library: PyMuPDF (fitz).
+Secondary Libraries: Pikepdf, pdfkit, pdf2docx, pdf2pptx.
+Streaming: BytesIO (Memory buffers to prevent 1KB corrupted files).
+System Tools: Ghostscript (GS) and wkhtmltopdf,tesseract,poppler.
+3. System ArchitectureThe engine follows a trilateral layout designed for maximum efficiency.
+Part 1: Matrix Sidebar: Extracts low-resolution PNG thumbnails using get_pixmap to allow for rapid page navigation without slowing down the browser.
+Part 2: Sovereign Workspace: A centered workspace utilizing the <embed> tag to display high-fidelity previews with a Framer Motion overlay for real-time watermark visualization.
+Part 3: Control Ribbon: A dedicated panel for adjusting text content, opacity, and rotation using a 0–360° matrix.
+4. Key Protocols ImplementedProtocolMethodologyWatermark StampUses insert_textbox with a centered Rect to allow arbitrary rotation angles.Page AnalysisAsynchronously reads PDF streams into memory to avoid 404/500 errors during thumbnail generation.Organize MatrixReorders page sequences via unique timestamped keys to prevent React DOM conflicts.Security ShieldApplies clean=True and garbage=3 during save to rebuild the PDF XREF table, fixing the "Protected Mode" error.
+5. Installation GuideTo recreate the environment, the following commands are required:
+Backend Setup:Bashpip install fastapi uvicorn pymupdf pikepdf pdfkit pdf2docx
+Frontend Setup:Bashnpm install eslint@9.19.0 framer-motion lucide-react next@latest --legacy-peer-deps

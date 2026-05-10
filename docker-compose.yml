@@ -1,0 +1,82 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        HF_TOKEN: ${HF_TOKEN:-}
+    container_name: arcanepdf-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - arcane_data:/app/temp_uploads
+      - arcane_models_v2:/app/models_cache
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${BACKEND_WORKERS:-1}
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      MALLOC_ARENA_MAX: "2"
+      OMP_THREAD_LIMIT: "2"
+      HF_TOKEN: ${HF_TOKEN:-}
+      MODEL_CACHE_DIR: /app/models_cache
+      HF_HOME: /app/models_cache
+      HF_HUB_VERBOSITY: error
+      HF_HUB_DISABLE_XET: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HF_HUB_OFFLINE: "1"
+      CORS_ORIGINS: ${CORS_ORIGINS:-"*"}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "1"
+          memory: 2G
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: arcanepdf-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -s http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+volumes:
+  arcane_data:
+    driver: local
+  arcane_models_v2:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
